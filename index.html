@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Captaja - Plataforma que conecta investidores a empresários para compra e venda de empresas ou participações societárias.">
+    <title>Captaja - Conectando Investidores e Empresários</title>
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #001C71;
+            --secondary: #4c4c4c;
+            --accent: #14C9E6;
+            --light-bg: #e3f1fa;
+            --white-bg: #f7f7f7;
+            --white: #ffffff;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background-color: var(--white-bg);
+            color: var(--primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 5px 15px var(--shadow);
+            animation: modalFade 0.3s ease-in;
+        }
+
+        @keyframes modalFade {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--secondary);
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--accent);
+        }
+
+        .modal-title {
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-size: 24px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--primary);
+            color: var(--white);
+            text-align: center;
+            border-radius: 5px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--white);
+            text-decoration: none;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .logo-img {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-menu li {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            position: relative;
+            transition: color 0.3s;
+            padding: 10px 0;
+        }
+
+        .nav-menu a:hover {
+            color: var(--accent);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: var(--white);
+            transition: all 0.3s;
+        }
+
+        .hamburger.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active .bar:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .hamburger.active .bar:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(51, 51, 51, 0.8), rgba(51, 51, 51, 0.9)), url('/api/placeholder/1600/800') no-repeat center center/cover;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--white);
+            margin-top: 80px;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero .slogan {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 20px;
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent);
+            color: var(--white);
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            border: 2px solid var(--accent);
+        }
+
+        .btn:hover {
+            background-color: transparent;
+            color: var(--accent);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 14px;
+            background-color: var(--accent);
+            color: var(--white);
+            border-radius: 5px;
+            text-decoration: none;
+            border: 1px solid var(--accent);
+            transition: all 0.3s;
+        }
+
+        .btn-sm:hover {
+            background-color: transparent;
+            color: var(--accent);
+        }
+
+        /* Como Funciona */
+        .how-it-works {
+            padding: 100px 0;
+            background-color: var(--white);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 36px;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--accent);
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 250px;
+            margin: 15px;
+            padding: 30px 20px;
+            background-color: var(--white-bg);
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .step:hover {
+            transform: translateY(-10px);
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            margin: 0 auto 20px;
+            background-color: var(--light-bg);
+            border-radius: 50%;
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .step h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        /* Para Investidores */
+        .investors, .companies {
+            padding: 100px 0;
+            background-color: var(--white);
+        }
+
+        .benefits {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            gap: 20px;
+        }
+
+        .benefit {
+            flex: 1;
+            min-width: 300px;
+            margin: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .benefit-icon {
+            min-width: 60px;
+            height: 60px;
+            background-color: var(--light-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--accent);
+            margin-right: 20px;
+        }
+
+        .benefit-content h3 {
+            margin-bottom: 10px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 60px 0 20px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background-color: var(--accent);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #cccccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .social-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .social-links li {
+            margin-right: 15px;
+        }
+
+        .social-links a {
+            display: block;
+            width: 40px;
+            height: 40px;
+            background-color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .social-links a:hover {
+            background-color: var(--accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--secondary);
+            font-size: 14px;
+            color: #aaaaaa;
+        }
+
+        /* Responsividade */
+        @media (max-width: 992px) {
+            .step, .benefit {
+                flex: 0 0 calc(50% - 30px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 80px;
+                flex-direction: column;
+                background-color: var(--primary);
+                width: 100%;
+                text-align: center;
+                transition: left 0.3s;
+                box-shadow: 0 10px 10px var(--shadow);
+                padding: 20px 0;
+                align-items: center;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-menu li {
+                margin: 15px 0;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero .slogan {
+                font-size: 20px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .step, .benefit {
+                flex: 0 0 100%;
+                margin: 15px 0;
+            }
+
+            .navbar {
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .logo {
+                flex-grow: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .hero .slogan {
+                font-size: 18px;
+            }
+
+            .section-title h2 {
+                font-size: 28px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo" aria-label="Captaja Home">
+                    <img src="/api/placeholder/150/50" alt="Captaja Logo" class="logo-img" id="logo-placeholder">
+                    Capta<span>ja</span>
+                </a>
+                <ul class="nav-menu" id="nav-menu">
+                    <li><a href="#" aria-label="Início">Início</a></li>
+                    <li><a href="#como-funciona" aria-label="Como Funciona">Como Funciona</a></li>
+                    <li><a href="#investidor" class="tooltip" aria-label="Sou Investidor">
+                        Sou Investidor
+                        <span class="tooltip-text">Conheça nossas oportunidades exclusivas para investidores</span>
+                    </a></li>
+                    <li><a href="#empresa" class="tooltip" aria-label="Sou Empresa">
+                        Sou Empresa
+                        <span class="tooltip-text">Descubra como vender sua empresa ou captar investimentos</span>
+                    </a></li>
+                    <li><a href="#" id="registro-btn" class="btn-sm" aria-label="Cadastre-se">Cadastre-se</a></li>
+                </ul>
+                <div class="hamburger" id="hamburger" role="button" aria-label="Toggle Menu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Modal de Cadastro -->
+    <div class="modal" id="registro-modal" role="dialog" aria-labelledby="registro-title">
+        <div class="modal-content">
+            <span class="close-modal" aria-label="Fechar Modal">×</span>
+            <h2 class="modal-title" id="registro-title">Cadastre-se</h2>
+            <form class="modal-form" aria-label="Formulário de Cadastro">
+                <div class="form-group">
+                    <label for="nome">Nome completo</label>
+                    <input type="text" id="nome" placeholder="Seu nome completo" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="email-cadastro">E-mail</label>
+                    <input type="email" id="email-cadastro" placeholder="Seu e-mail" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="perfil">Você é:</label>
+                    <select id="perfil" required aria-required="true">
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="investidor">Investidor</option>
+                        <option value="empreendedor">Empreendedor</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Criar conta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Contato Rápido -->
+    <div class="modal" id="contato-modal" role="dialog" aria-labelledby="contato-title">
+        <div class="modal-content">
+            <span class="close-modal" aria-label="Fechar Modal">×</span>
+            <h2 class="modal-title" id="contato-title">Fale Conosco</h2>
+            <form class="modal-form" aria-label="Formulário de Contato">
+                <div class="form-group">
+                    <label for="contato-nome">Nome</label>
+                    <input type="text" id="contato-nome" placeholder="Seu nome" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="contato-email">E-mail</label>
+                    <input type="email" id="contato-email" placeholder="Seu e-mail" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="contato-assunto">Assunto</label>
+                    <select id="contato-assunto" required aria-required="true">
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="duvida">Dúvidas</option>
+                        <option value="suporte">Suporte</option>
+                        <option value="empresa">Cadastrar Empresa</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="contato-mensagem">Mensagem</label>
+                    <textarea id="contato-mensagem" placeholder="Sua mensagem" required aria-required="true"></textarea>
+                </div>
+                <button type="submit" class="btn">Enviar mensagem</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="container">
+            <div class="hero-content">
+                <h1 id="hero-title">Invista com rapidez sem contatar os donos da empresa</h1>
+                <div class="slogan">Capte seu futuro — invista em inovação</div>
+                <p>Conecte-se com empresas à venda e oportunidades exclusivas</p>
+                <a href="#" class="btn" id="comece-agora-btn" aria-label="Comece Agora">Comece Agora</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Como Funciona -->
+    <section class="how-it-works" id="como-funciona" aria-labelledby="how-it-works-title">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="how-it-works-title">Como Funciona</h2>
+                <p>Conheça os passos para investir com rapidez sem contatar os donos da empresa na Captaja</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">1</div>
+                    <h3>Cadastre-se</h3>
+                    <p>Crie sua conta de forma rápida e segura. Valide seus dados e obtenha acesso às oportunidades exclusivas.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">2</div>
+                    <h3>Explore oportunidades</h3>
+                    <p>Analise empresas verificadas, acesse dados financeiros e conheça negócios disponíveis para investimento.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">3</div>
+                    <h3>Invista com rapidez</h3>
+                    <p>Finalize sua participação sem contatar diretamente os donos da empresa, com eficiência e segurança.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Para Investidores -->
+    <section class="investors" id="investidor" aria-labelledby="investidor-title">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="investidor-title">Para Investidores</h2>
+                <p>Por que escolher a Captaja para seus investimentos</p>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOjNgUWFjyU-d0LFfQR6wHyIax7Vjwz5jOLGMhkQoGPce64Q/viewform" target="_blank" class="btn" style="margin-top: 20px;" aria-label="Formulário para Investidores">Preencha o formulário de investidor</a>
+            </div>
+            <div class="benefits">
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Segurança</h3>
+                        <p>Todas as empresas são verificadas e validadas por nossa equipe de especialistas. Dados confidenciais são protegidos e compartilhados apenas com investidores qualificados.</p>
+                    </div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Curadoria</h3>
+                        <p>Selecionamos cuidadosamente cada oportunidade, garantindo acesso apenas a negócios com potencial real de crescimento e retorno sobre o investimento.</p>
+                    </div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Informação completa</h3>
+                        <p>Tenha acesso a dados financeiros, modelos de negócios, projeções e informações essenciais para tomar decisões de investimento bem fundamentadas.</p>
+                    </div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Suporte especializado</h3>
+                        <p>Nossa equipe de consultores está disponível para orientar investidores em todas as etapas, desde a análise inicial até a formalização do investimento.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Para Empresas -->
+    <section class="companies" id="empresa" aria-labelledby="empresa-title">
+        <div class="container">
+            <div class="section-title">
+                <h2 id="empresa-title">Para Empresas</h2>
+                <p>Por que escolher a Captaja para vender sua empresa ou captar investimentos</p>
+            </div>
+            <div class="benefits">
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Visibilidade</h3>
+                        <p>Apresente sua empresa ou startup a uma rede de investidores qualificados, aumentando suas chances de encontrar o parceiro ideal.</p>
+                    </div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Processo Seguro</h3>
+                        <p>Negocie com confiança, sabendo que todos os investidores passam por um processo de validação para garantir segurança e confiabilidade.</p>
+                    </div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Ferramentas de Apresentação</h3>
+                        <p>Crie apresentações detalhadas com dados financeiros e pitches claros para atrair o interesse de investidores.</p>
+                    </div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-icon">✓</div>
+                    <div class="benefit-content">
+                        <h3>Suporte Dedicado</h3>
+                        <p>Conte com nossa equipe para orientar você em cada etapa, desde o cadastro até a negociação final.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contato" aria-labelledby="footer-title">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 id="footer-title">Captaja</h3>
+                    <p>Plataforma que conecta investidores a empresários que desejam vender empresas inteiras ou participações societárias.</p>
+                    <ul class="social-links" aria-label="Links de redes sociais">
+                        <li><a href="#" aria-label="Facebook">FB</a></li>
+                        <li><a href="#" aria-label="LinkedIn">IN</a></li>
+                        <li><a href="#" aria-label="Twitter">TW</a></li>
+                        <li><a href="#" aria-label="YouTube">YT</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Links Rápidos</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" aria-label="Início">Início</a></li>
+                        <li><a href="#como-funciona" aria-label="Como Funciona">Como Funciona</a></li>
+                        <li><a href="#investidor" aria-label="Para Investidores">Para Investidores</a></li>
+                        <li><a href="#empresa" aria-label="Para Empresas">Para Empresas</a></li>
+                        <li><a href="#" id="footer-contato-btn" aria-label="Contato">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contato</h3>
+                    <ul class="footer-links">
+                        <li><a href="mailto:contato@captaja.com.br" aria-label="Enviar e-mail para contato">contato@captaja.com.br</a></li>
+                        <li><a href="tel:+5511999999999" aria-label="Ligar para contato">+55 (11) 99999-9999</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Captaja. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Hamburger Menu Toggle
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Modal Handling
+        const modals = document.querySelectorAll('.modal');
+        const openModalButtons = {
+            'registro-btn': 'registro-modal',
+            'footer-contato-btn': 'contato-modal',
+            'comece-agora-btn': 'registro-modal'
+        };
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+
+        Object.keys(openModalButtons).forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const modal = document.getElementById(openModalButtons[buttonId]);
+                    modal.style.display = 'flex';
+                });
+            }
+        });
+
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modals.forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            });
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            modals.forEach(modal => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        // Close mobile menu when clicking a nav link
+        navMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
